@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <declare-styleable name="RangeChooseBar">
+
+        <attr name="rangebar_background" format="color"></attr>
+        <attr name="rangebar_choose_background" format="color"></attr>
+        <attr name="rangebar_text_color" format="color"></attr>
+        <attr name="rangebar_text_size" format="dimension"></attr>
+        <attr name="rangebar_width" format="dimension"></attr>
+        <attr name="rangebar_slice" format="integer"></attr>
+        <attr name="rangebar_stoken_width" format="integer"></attr>
+        <attr name="rangebar_title" format="string"></attr>
+
+    </declare-styleable>
+
+</resources>
