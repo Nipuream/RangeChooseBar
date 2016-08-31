@@ -8,6 +8,7 @@ import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Rect;
+import android.text.TextUtils;
 import android.util.AttributeSet;
 import android.util.TypedValue;
 import android.view.MotionEvent;
@@ -71,7 +72,8 @@ public class RangeChooseBar extends View {
         this.textSize = array.getDimension(R.styleable.RangeChooseBar_rangebar_text_size,textSize);
         ChooseBarWidth = (int) array.getDimension(R.styleable.RangeChooseBar_rangebar_width,dip2px(context,40));
         slice = array.getInteger(R.styleable.RangeChooseBar_rangebar_slice,10);
-        title = array.getString(R.styleable.RangeChooseBar_rangebar_title);
+        String title = array.getString(R.styleable.RangeChooseBar_rangebar_title);
+        if(!TextUtils.isEmpty(title)) this.title = title;
         array.recycle();
 
         grayPaint.setColor(background_color);
@@ -95,7 +97,12 @@ public class RangeChooseBar extends View {
         if(mode == MeasureSpec.AT_MOST){
             setMeasuredDimension(widthSize,200);
         }
+    }
 
+
+    @Override
+    protected void onLayout(boolean changed, int left, int top, int right, int bottom) {
+        super.onLayout(changed, left, top, right, bottom);
         paddingTop = getPaddingTop();
         paddingLeft = getPaddingLeft();
         paddingBottom = getPaddingBottom();
@@ -111,6 +118,7 @@ public class RangeChooseBar extends View {
 
         perSlice = (drawWidth-ChooseBarWidth)/slice;
     }
+
 
 
     public static int dip2px(Context context, float dpValue) {
@@ -131,8 +139,8 @@ public class RangeChooseBar extends View {
         maxRect = new Rect(MaxOriginLeft,drawHeight/4 * 3-ChooseBarWidth/2,MaxOriginRight,drawHeight/4 * 3+ChooseBarWidth/2);
         canvas.drawBitmap(max,null,maxRect,grayPaint);
 
-        int MinPoi = (MinOriginLeft + MinOriginRight)/2;
-        int MaxPoi = (MaxOriginLeft + MaxOriginRight)/2;
+        int MinPoi = (MinOriginLeft + MinOriginRight)/2 - ChooseBarWidth/2;
+        int MaxPoi = (MaxOriginLeft + MaxOriginRight)/2 - ChooseBarWidth/2;
 
 
         int MinCurrentSlice = MinPoi/perSlice;
@@ -141,8 +149,8 @@ public class RangeChooseBar extends View {
         float MinCurrentSliceValue = yellowPaint.measureText(String.valueOf(MinCurrentSlice));
         float MaxCurrentSliceValue = yellowPaint.measureText(String.valueOf(MaxCurrentSlice));
 
-        canvas.drawText(String.valueOf(MinCurrentSlice),MinPoi-MinCurrentSliceValue/2,drawHeight/2,yellowPaint);
-        canvas.drawText(String.valueOf(MaxCurrentSlice),MaxPoi-MaxCurrentSliceValue/2,drawHeight/2,yellowPaint);
+        canvas.drawText(String.valueOf(MinCurrentSlice),(MinPoi+ChooseBarWidth/2)-MinCurrentSliceValue/2,drawHeight/2,yellowPaint);
+        canvas.drawText(String.valueOf(MaxCurrentSlice),(MaxPoi+ChooseBarWidth/2)-MaxCurrentSliceValue/2,drawHeight/2,yellowPaint);
 
         canvas.drawText(title,paddingLeft,drawHeight/4,unitPaint);
 
@@ -186,6 +194,10 @@ public class RangeChooseBar extends View {
                 invalidate();
             }
         }
+
+        if(isMaxPress || isMinPress)
+            getParent().requestDisallowInterceptTouchEvent(true);
+
         return super.dispatchTouchEvent(event);
     }
 
@@ -326,6 +338,10 @@ public class RangeChooseBar extends View {
         return super.onTouchEvent(event);
     }
 
+    public String getChooseArea(){
+        return Math.min(getMinCurretnSlice(),getMaxCurrentSlice()) +","+ Math.max(getMinCurretnSlice(),getMaxCurrentSlice());
+    }
+
 
     private int getMaxCurrentSlice(){
         int slicePoi = (MaxOriginLeft + MaxOriginRight)/2 - ChooseBarWidth/2;
@@ -347,6 +363,20 @@ public class RangeChooseBar extends View {
         return MincurrentSlice;
     }
 
+
+    public void setMinCurrentSlice(final int minSlice){
+        int afterValue = minSlice * perSlice;
+        MinOriginLeft = afterValue - ChooseBarWidth/2 +ChooseBarWidth/2;
+        MinOriginRight = afterValue + ChooseBarWidth/2 + ChooseBarWidth/2;
+        invalidate();
+    }
+
+    public void setMaxCurrentSlice(final int maxSlice){
+        int afterValue = maxSlice * perSlice;
+        MaxOriginLeft = afterValue - ChooseBarWidth/2 + ChooseBarWidth/2;
+        MaxOriginRight = afterValue + ChooseBarWidth /2 + ChooseBarWidth/2;
+        invalidate();
+    }
 
     public interface RangeChooseListener{
         void chooseResult(int min,int max);
